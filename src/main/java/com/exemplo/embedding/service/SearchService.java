@@ -1,29 +1,30 @@
 package com.exemplo.embedding.service;
 
-import com.exemplo.embedding.api.SearchRequest;
-import com.exemplo.embedding.api.SearchResponse;
-import com.exemplo.embedding.api.SearchResultResponse;
-import com.exemplo.embedding.repository.VectorDocumentRepository;
+import com.exemplo.embedding.controller.dto.SearchRequest;
+import com.exemplo.embedding.controller.dto.SearchResponse;
+
 import java.util.List;
 import java.util.Map;
+
+import com.exemplo.embedding.repository.VectorSearchRepository;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 @Service
-public class SemanticSearchService {
+public class SearchService {
 
-    private static final int TOP_K = 5;
-    private static final double MIN_SIMILARITY = 0.70;
+    private static final int TOP_K = 3;
+    private static final double MIN_SIMILARITY = 0.50;
 
     private final EmbeddingGenerator embeddingGenerator;
-    private final VectorDocumentRepository repository;
+    private final VectorSearchRepository repository;
     private final VectorLiteralConverter vectorLiteralConverter;
     private final JsonMapper jsonMapper;
 
-    public SemanticSearchService(
+    public SearchService(
             EmbeddingGenerator embeddingGenerator,
-            VectorDocumentRepository repository,
+            VectorSearchRepository repository,
             VectorLiteralConverter vectorLiteralConverter,
             JsonMapper jsonMapper
     ) {
@@ -33,17 +34,17 @@ public class SemanticSearchService {
         this.jsonMapper = jsonMapper;
     }
 
-    public SearchResponse search(SearchRequest request) {
+    public List<SearchResponse> search(SearchRequest request) {
 
         float[] queryEmbedding = embeddingGenerator.generateForQuery(request.query());
 
-        List<SearchResultResponse> results = repository.findNearest(
+        List<SearchResponse> results = repository.findNearest(
                         vectorLiteralConverter.convert(queryEmbedding),
                         MIN_SIMILARITY,
                         TOP_K
                 )
                 .stream()
-                .map(result -> new SearchResultResponse(
+                .map(result -> new SearchResponse(
                         result.id(),
                         result.content(),
                         readMetadata(result.metadata()),
@@ -51,7 +52,7 @@ public class SemanticSearchService {
                 ))
                 .toList();
 
-        return new SearchResponse(request.query(), results);
+        return results;
     }
 
     private Map<String, Object> readMetadata(String metadata) {

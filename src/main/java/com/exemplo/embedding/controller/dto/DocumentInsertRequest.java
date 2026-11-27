@@ -1,4 +1,4 @@
-package com.exemplo.embedding.api;
+package com.exemplo.embedding.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

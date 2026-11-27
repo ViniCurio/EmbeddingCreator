@@ -1,7 +1,6 @@
 package com.exemplo.embedding.service;
 
-import com.exemplo.embedding.api.DocumentInsertRequest;
-import com.exemplo.embedding.api.DocumentInsertResponse;
+import com.exemplo.embedding.controller.dto.DocumentInsertRequest;
 import com.exemplo.embedding.repository.VectorDocumentRepository;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +27,7 @@ public class DocumentService {
         this.jsonMapper = jsonMapper;
     }
 
-    public DocumentInsertResponse insert(DocumentInsertRequest request) {
+    public void insert(DocumentInsertRequest request) {
         float[] embedding = embeddingGenerator.generateForDocument(request.content());
 
         UUID id = UUID.randomUUID();
@@ -49,6 +48,5 @@ public class DocumentService {
             throw new IllegalStateException("Não foi possível salvar o documento vetorial", exception);
         }
 
-        return new DocumentInsertResponse(id);
     }
 }
